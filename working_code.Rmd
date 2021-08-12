@@ -1,0 +1,42 @@
+---
+title: "heat_cardiovas"
+author: "Puvvula"
+date: "8/12/2021"
+output: pdf_document
+---
+
+```{r setup, include=T}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(lubridate)
+library(broom)
+
+#health data 2016-mid 2020
+card<- read_csv("/work/jessebell/puvvula/htn_az_grp_fin.csv")
+card$date<-as.Date(card$date, format = "%m/%d/%Y")
+card$year<- as.factor(format(card$date, "%Y"))
+
+#daily temperature and relative humidity 2008-2017
+temp<- read_csv("/work/jessebell/puvvula/daily_temp_babak.csv")
+temp$date<-as.Date(temp$date, format = "%m/%d/%Y")
+temp$year<- as.factor(format(temp$date, "%Y"))
+
+#filter year 2016 and 2017 to match with health data
+temp_card<- card %>% filter(year %in% c("2016", "2017")) #health subset
+temp_dat<- temp %>% filter(year %in% c("2016", "2017")) #temperature subset
+
+#join health and temperature data
+dat<- left_join(temp_card, temp_dat, by=c("date"))
+
+#filter summer season
+dat$month<- as.factor(month(dat$date)) #created month variable
+dat_sum<-dat %>% filter(month %in% c("5","6","7","8","9"))
+
+
+#Model
+
+
+
+
+```
