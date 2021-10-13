@@ -1,0 +1,47 @@
+---
+title: "cardio_heat"
+author: "Puvvula"
+date: "10/12/2021"
+output: pdf_document
+---
+
+
+```{r}
+library(tidyverse)
+library(skimr)
+library(janitor)
+library(mgcv)
+library(lubridate)
+library(GGally)
+library(ggplot2)
+
+dat<- as_tibble(read_csv("card_heat.csv"))
+
+dat$date <- as.Date(dat$Date, format = "%m/%d/%Y")
+dat$month<- as.factor(month(dat$date))
+dat$year<- as.factor(format(dat$date, '%Y'))
+dat$dow <- as.factor(wday(as.Date(dat$date, format = "%m/%d/%Y")))
+weekdays1 <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+dat$wDay <- factor((weekdays(dat$date) %in% weekdays1), 
+                       levels=c(FALSE, TRUE), labels=c('weekend', 'weekday'))
+dat<-clean_names(dat)
+
+#correlations
+ggpairs(dat, columns = 3:9, ggplot2::aes(colour=season))+theme_bw()
+
+
+#GLM approach
+m1<- glm(card_cnt~tmax, family=quasipoisson, data = dat)
+summary(m1)
+plot(m1)
+
+
+#gam
+m2<-  gam(card_cnt~ s(tmax,by=as.factor(season), 
+                      k=4, bs='cr')+dow+month+year,
+         family=poisson(link = log),
+         method = "GCV.Cp", data = dat)
+summary(m2)
+plot.gam(m2)
+```
+
